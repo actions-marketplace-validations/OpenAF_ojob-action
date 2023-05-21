@@ -1,5 +1,5 @@
 # ojob-action
-OpenAF's oJob GitHub action
+OpenAF's oJob GitHub action to run generic [OpenAF](https://docs.openaf.io) [oJobs](https://docs.openaf.io/docs/concepts/oJob.html).
 
 ![version](.github/ojobs/version.svg)
 
