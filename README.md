@@ -14,7 +14,7 @@ jobs:
     name: Get env variables
     steps:
     - uses: actions/checkout@v3
-    - uses: nmaguiar/myOJobs@nightly
+    - uses: openaf/ojob-action@v1
       with:
         ojob: 'ojob.io/envs'
 ````
@@ -30,7 +30,7 @@ jobs:
     name: Echo arguments
     steps:
     - uses: actions/checkout@v3
-    - uses: nmaguiar/myOJobs@nightly
+    - uses: openaf/ojob-action@v1
       with:
         ojob: 'ojob.io/echo'
         args: 'abc=123 xyz=abc'
