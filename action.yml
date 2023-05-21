@@ -1,0 +1,31 @@
+name: 'Test'
+description: 'Test'
+inputs:
+  ojob:  
+    description: 'The oJob to run'
+    required: true
+    default: 'ojob.io/envs'
+  args:
+    description: 'The oJob args to use'
+    required: false
+    default: ''
+  dist:
+    description: 'The OpenAF distribution to use'
+    required: false
+    default: ''
+runs:
+  using: "composite"
+  steps:
+  - shell: bash
+    run  : |
+      if [ ! -f /tmp/oaf/ojob ]; then
+        CDIR=`pwd`
+        mkdir /tmp/oaf
+        cd /tmp/oaf
+        curl https://openaf.io/${{ inputs.dist }}/openaf.jar.repacked -o openaf.jar
+        java -jar openaf.jar --install
+        cd $CDIR
+      fi
+  - shell: bash
+    run  : |
+      /tmp/oaf/ojob ${{ inputs.ojob }} ${{ inputs.args }}
