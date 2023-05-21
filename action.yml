@@ -1,5 +1,5 @@
-name: 'Test'
-description: 'Test'
+name: 'oJob'
+description: "Runs an OpenAF's oJob"
 inputs:
   ojob:  
     description: 'The oJob to run'
