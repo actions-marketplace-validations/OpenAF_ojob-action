@@ -1,0 +1,18 @@
+on: [push]
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    name: Update badge oJob
+    steps:
+    - uses: actions/checkout@v3
+    - uses: openaf/ojob-action@v1
+      with:
+        ojob: '.github/ojobs/updateVerBadge.yaml'
+        dist: 't8'
+    - run: |
+        git config --global user.email "openaf@users.noreply.github.com"
+        git config --global user.name "OpenAF"
+        git add .github/ojobs/version.svg
+        git commit -m "update badge"
+        git push

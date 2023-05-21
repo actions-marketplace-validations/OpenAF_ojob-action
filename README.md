@@ -1,6 +1,8 @@
 # ojob-action
 OpenAF's oJob GitHub action
 
+![version](.github/ojobs/version.svg)
+
 ## Usage
 
 ### Example of a GitHub action to run an ojob.io job:

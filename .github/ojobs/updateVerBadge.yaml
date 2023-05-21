@@ -1,0 +1,40 @@
+todo:
+- Check tag version
+- Create badge
+
+ojob:
+  opacks      :
+  - Badgen: 20230520
+  catch       : printErrnl("[" + job.name + "] "); if (isDef(exception.javaException)) exception.javaException.printStackTrace(); else printErr(exception)
+  templateArgs: true
+
+include:
+- badgen.yaml
+
+jobs:
+# -----------------------
+- name: Check tag version
+  exec: |
+    args.tagVersion = $from( 
+                        $rest().get("https://api.github.com/repos/openaf/ojob-action/releases") 
+                      )
+                      .sort("published_at")
+                      .at(0)
+                      .name
+
+# ------------------ 
+- name: Create badge
+  from:
+  - (get): res
+  to  :
+  - (template): "@{{tagVersion}}"
+    ((outPath): status
+    ((key    ): args
+    ((out    ): args
+  - name      : Badgen generate file
+    args      :
+      label     : "openaf/ojob-action:"
+      labelColor: grey2
+      color     : green
+      icon      : openaf.svg
+      file      : .github/ojobs/version.svg
