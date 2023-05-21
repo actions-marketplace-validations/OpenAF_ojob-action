@@ -1,5 +1,8 @@
 name: 'oJob'
 description: "Runs an OpenAF's oJob"
+branding:
+  icon : 'command'
+  color: 'orange'
 inputs:
   ojob:  
     description: 'The oJob to run'
