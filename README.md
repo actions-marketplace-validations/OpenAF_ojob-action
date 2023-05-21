@@ -25,10 +25,11 @@ On a GitHub action step add the following entry:
 ### Example of a GitHub action to run an ojob.io job:
 
 ````yaml
+name: Get Envs
 on: [push]
 
 jobs:
-  Test:
+  Get-Envs:
     runs-on: ubuntu-latest
     name: Get env variables
     steps:
@@ -41,10 +42,11 @@ jobs:
 ### Example of a GitHub action to run an ojob.io job with arguments:
 
 ````yaml
+name: Echo arguments
 on: [push]
 
 jobs:
-  Test:
+  Echo-Arguments:
     runs-on: ubuntu-latest
     name: Echo arguments
     steps:
@@ -55,13 +57,52 @@ jobs:
         args: 'abc=123 xyz=abc'
 ````
 
+### Example of a GitHub action to security scan a container image and produce a badge:
+
+````yaml
+name: Scan Images
+
+on:
+  push:
+    branches: [ "master" ]
+  schedule:
+    - cron: '00 1 * * 6'
+
+jobs:
+  Scan-Images:
+    runs-on: ubuntu-latest
+    name: Scan images
+    steps:
+    - uses: actions/checkout@v3
+    - uses: openaf/ojob-action@v1
+      with:
+        ojob: 'ojob.io/sec/genSecBadge'
+        args: 'image=some/image:latest file=.github/sec-latest.svg'
+        dist: 'nightly'
+    - uses: openaf/ojob-action@v1
+      with:
+        ojob: 'ojob.io/sec/genSecBadge'
+        args: 'image=some/image:build file=.github/sec-build.svg'
+        dist: 'nightly'
+    - run: |
+        git config --global user.email "openaf@users.noreply.github.com"
+        git config --global user.name "OpenAF"
+        if [[ $(git status --porcelain) ]]; then
+          git add .github/sec-latest.svg
+          git add .github/sec-build.svg
+          git commit -m "update badge"
+          git push
+        fi
+````
+
 ### Example of a GitHub action to retrieve the installed version and distribution of OpenAF:
 
 ````yaml
+name: Get Version
 on: [push]
 
 jobs:
-  Test:
+  Get-Version:
     runs-on: ubuntu-latest
     name: Get version
     steps:
