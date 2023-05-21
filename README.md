@@ -6,6 +6,22 @@ OpenAF's oJob GitHub action to run generic [OpenAF](https://docs.openaf.io) [oJo
 
 ## Usage
 
+On a GitHub action step add the following entry:
+
+````yaml
+  - uses: openaf/ojob-action@v1
+    with:
+      # the reference to a local oJob yaml/json file or a remote oJob.io
+      ojob: '...' 
+      # given the oJob referenced the key/value arguments to provide to it
+      args: 'key1=value1 key2=value2 ...'
+      # the public OpenAF distribution to use as runtime (e.g. nightly)
+      # if no value is provided it defaults to the stable
+      dist: '...'
+````
+
+## Examples
+
 ### Example of a GitHub action to run an ojob.io job:
 
 ````yaml
