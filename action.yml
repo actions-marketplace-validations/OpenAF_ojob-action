@@ -1,4 +1,4 @@
-name: 'oJob'
+name: "OpenAF's oJob action"
 description: "Runs an OpenAF's oJob"
 branding:
   icon : 'command'
