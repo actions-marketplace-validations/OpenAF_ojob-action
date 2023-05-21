@@ -16,3 +16,4 @@ jobs:
         git add .github/ojobs/version.svg
         git commit -m "update badge"
         git push
+        git pull
