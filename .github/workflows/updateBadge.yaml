@@ -1,6 +1,7 @@
 name: Update version badge
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
