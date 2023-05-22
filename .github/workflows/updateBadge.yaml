@@ -1,3 +1,5 @@
+name: Update version badge
+
 on:
   release:
     types: [published]
@@ -16,7 +18,8 @@ jobs:
       with:
         ojob: '.github/ojobs/updateVerBadge.yaml'
         dist: 't8'
-    - run: |
+    - name: Push
+      run : |
         git config user.name github-actions
         git config user.email github-actions@github.com
         if [[ $(git status --porcelain) ]]; then
