@@ -4,7 +4,7 @@ on:
     types: [published]
 
 jobs:
-  Update Badge:
+  Update-Badge:
     runs-on    : ubuntu-latest
     permissions:
       contents: write
