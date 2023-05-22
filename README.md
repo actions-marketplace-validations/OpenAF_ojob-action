@@ -41,7 +41,7 @@ After the first use, in a job, the installation of the OpenAF runtime is reused 
 
 ## Examples
 
-### Example of a GitHub action to run an ojob.io job:
+*Example of a GitHub action to run an ojob.io job:*
 
 ````yaml
 name: Get Envs
@@ -60,7 +60,7 @@ jobs:
         ojob: 'ojob.io/envs'
 ````
 
-### Example of a GitHub action to run an ojob.io job with arguments:
+*Example of a GitHub action to run an ojob.io job with arguments:*
 
 ````yaml
 name: Echo arguments
@@ -80,7 +80,7 @@ jobs:
         args: 'abc=123 xyz=abc'
 ````
 
-### Example of a GitHub action to security scan a container image and produce a badge:
+*Example of a GitHub action to security scan a container image and produce a badge:*
 
 ````yaml
 name: Scan Images
@@ -93,9 +93,11 @@ on:
 
 jobs:
   Scan-Images:
-    runs-on: ubuntu-latest
-    name   : Scan images
-    steps  :
+    runs-on    : ubuntu-latest
+    permissions:
+      contents: write
+    name       : Scan images
+    steps      :
     - uses: actions/checkout@v3
 
     - name: Scan some/image:latest
@@ -115,8 +117,8 @@ jobs:
     - name: Add the generated badges 
       run : |
         # user identification
-        git config --global user.email "openaf@users.noreply.github.com"
-        git config --global user.name "OpenAF"
+        git config user.name github-actions
+        git config user.email github-actions@github.com
         # only add/commit/push if new contents exist
         if [[ $(git status --porcelain) ]]; then
           git add .github/sec-latest.svg
@@ -126,7 +128,7 @@ jobs:
         fi
 ````
 
-### Example of a GitHub action to retrieve the installed version and distribution of OpenAF:
+*Example of a GitHub action to retrieve the installed version and distribution of OpenAF:*
 
 ````yaml
 name: Get Version
