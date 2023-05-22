@@ -18,7 +18,7 @@ jobs:
     args.tagVersion = $from( 
                         $rest().get("https://api.github.com/repos/openaf/ojob-action/releases") 
                       )
-                      .sort("published_at")
+                      .sort("-published_at")
                       .at(0)
                       .name
 
