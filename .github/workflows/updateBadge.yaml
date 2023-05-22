@@ -3,18 +3,22 @@ on:
     types: [published]
 
 jobs:
-  Test:
-    runs-on: ubuntu-latest
-    name: Update badge oJob
-    steps:
-    - uses: actions/checkout@v3
-    - uses: openaf/ojob-action@v1
+  Update Badge:
+    runs-on    : ubuntu-latest
+    permissions:
+      contents: write
+    name       : Update badge oJob
+    steps      :
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Update version badge
+      uses: openaf/ojob-action@v1
       with:
         ojob: '.github/ojobs/updateVerBadge.yaml'
         dist: 't8'
     - run: |
-        git config --global user.email "openaf@users.noreply.github.com"
-        git config --global user.name "OpenAF"
+        git config user.name github-actions
+        git config user.email github-actions@github.com
         if [[ $(git status --porcelain) ]]; then
           git add .github/ojobs/version.svg
           git commit -m "update badge"
