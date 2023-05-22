@@ -9,7 +9,8 @@ OpenAF's oJob GitHub action to run generic [OpenAF](https://docs.openaf.io) [oJo
 On a GitHub action step add the following entry:
 
 ````yaml
-  - uses: openaf/ojob-action@v1
+  - name: Executing an oJob
+    uses: openaf/ojob-action@v1
     with:
       # the reference to a local oJob yaml/json file or a remote oJob.io
       ojob: '...' 
@@ -18,6 +19,24 @@ On a GitHub action step add the following entry:
       # the public OpenAF distribution to use as runtime (e.g. nightly)
       # if no value is provided it defaults to the stable
       dist: '...'
+````
+
+After the first use, in a job, the installation of the OpenAF runtime is reused thus making additional steps using this action faster. It's also possible to cache the runtime and corresponding oPacks between job execution with [GitHub Actions caching](https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#comparing-artifacts-and-dependency-caching) (saving, at least, around ~4/5 seconds of action execution) but you will have to be carefull with the management of the cache. Example:
+
+````yaml
+  - name: Cache OpenAF runtime
+    uses: actions/cache@v3
+    with:
+      # you need to manage the cache in the best way specifically for your case
+      key : oaf-nightly
+      path: /tmp/oaf
+
+  - name: Executing an oJob
+    uses: openaf/ojob-action@v1
+    with:
+      ojob: '...' 
+      args: 'key1=value1 key2=value2 ...'
+      dist: 'nightly'
 ````
 
 ## Examples
@@ -31,10 +50,12 @@ on: [push]
 jobs:
   Get-Envs:
     runs-on: ubuntu-latest
-    name: Get env variables
-    steps:
+    name   : Get env variables
+    steps  :
     - uses: actions/checkout@v3
-    - uses: openaf/ojob-action@v1
+
+    - name: Retrieve env variables for testing
+      uses: openaf/ojob-action@v1
       with:
         ojob: 'ojob.io/envs'
 ````
@@ -48,10 +69,12 @@ on: [push]
 jobs:
   Echo-Arguments:
     runs-on: ubuntu-latest
-    name: Echo arguments
-    steps:
+    name   : Echo arguments
+    steps  :
     - uses: actions/checkout@v3
-    - uses: openaf/ojob-action@v1
+
+    - name: Echo input args for testing
+      uses: openaf/ojob-action@v1
       with:
         ojob: 'ojob.io/echo'
         args: 'abc=123 xyz=abc'
@@ -71,22 +94,30 @@ on:
 jobs:
   Scan-Images:
     runs-on: ubuntu-latest
-    name: Scan images
-    steps:
+    name   : Scan images
+    steps  :
     - uses: actions/checkout@v3
-    - uses: openaf/ojob-action@v1
+
+    - name: Scan some/image:latest
+      uses: openaf/ojob-action@v1
       with:
         ojob: 'ojob.io/sec/genSecBadge'
         args: 'image=some/image:latest file=.github/sec-latest.svg'
         dist: 'nightly'
-    - uses: openaf/ojob-action@v1
+
+    - name: Scan some/image:build
+      uses: openaf/ojob-action@v1
       with:
         ojob: 'ojob.io/sec/genSecBadge'
         args: 'image=some/image:build file=.github/sec-build.svg'
         dist: 'nightly'
-    - run: |
+
+    - name: Add the generated badges 
+      run : |
+        # user identification
         git config --global user.email "openaf@users.noreply.github.com"
         git config --global user.name "OpenAF"
+        # only add/commit/push if new contents exist
         if [[ $(git status --porcelain) ]]; then
           git add .github/sec-latest.svg
           git add .github/sec-build.svg
@@ -107,7 +138,9 @@ jobs:
     name: Get version
     steps:
     - uses: actions/checkout@v3
-    - run : |
+
+    - name: Generating getVersion.yaml oJob
+      run : |
         cat <<EOF > getVersion.yaml
         todo:
         - check version
@@ -118,7 +151,9 @@ jobs:
             var data = { version: getVersion(), distribution: getDistribution() }
             ow.oJob.output(data, args)
         EOF
-    - uses: openaf/ojob-action@v1
+
+    - name: Running getVersion.yaml oJob
+      uses: openaf/ojob-action@v1
       with:
         ojob: 'getVersion.yaml'
         dist: 'nightly'
