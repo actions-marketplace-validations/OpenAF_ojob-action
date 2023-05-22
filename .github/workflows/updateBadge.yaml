@@ -15,7 +15,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Update version badge
-      uses: openaf/ojob-action@v1
+      uses: openaf/ojob-action@v2
       with:
         ojob: '.github/ojobs/updateVerBadge.yaml'
         dist: 't8'
