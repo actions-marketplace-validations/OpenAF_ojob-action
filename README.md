@@ -10,7 +10,7 @@ On a GitHub action step add the following entry:
 
 ````yaml
   - name: Executing an oJob
-    uses: openaf/ojob-action@v1
+    uses: openaf/ojob-action@v2
     with:
       # the reference to a local oJob yaml/json file or a remote oJob.io
       ojob: '...' 
@@ -32,7 +32,7 @@ After the first use, in a job, the installation of the OpenAF runtime is reused 
       path: /tmp/oaf
 
   - name: Executing an oJob
-    uses: openaf/ojob-action@v1
+    uses: openaf/ojob-action@v2
     with:
       ojob: '...' 
       args: 'key1=value1 key2=value2 ...'
@@ -55,7 +55,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Retrieve env variables for testing
-      uses: openaf/ojob-action@v1
+      uses: openaf/ojob-action@v2
       with:
         ojob: 'ojob.io/envs'
 ````
@@ -74,7 +74,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Echo input args for testing
-      uses: openaf/ojob-action@v1
+      uses: openaf/ojob-action@v2
       with:
         ojob: 'ojob.io/echo'
         args: 'abc=123 xyz=abc'
@@ -101,14 +101,14 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Scan some/image:latest
-      uses: openaf/ojob-action@v1
+      uses: openaf/ojob-action@v2
       with:
         ojob: 'ojob.io/sec/genSecBadge'
         args: 'image=some/image:latest file=.github/sec-latest.svg'
         dist: 'nightly'
 
     - name: Scan some/image:build
-      uses: openaf/ojob-action@v1
+      uses: openaf/ojob-action@v2
       with:
         ojob: 'ojob.io/sec/genSecBadge'
         args: 'image=some/image:build file=.github/sec-build.svg'
@@ -155,7 +155,7 @@ jobs:
         EOF
 
     - name: Running getVersion.yaml oJob
-      uses: openaf/ojob-action@v1
+      uses: openaf/ojob-action@v2
       with:
         ojob: 'getVersion.yaml'
         dist: 'nightly'
