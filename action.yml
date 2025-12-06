@@ -6,29 +6,78 @@ branding:
 inputs:
   ojob:  
     description: 'The oJob to run'
-    required: true
-    default: 'ojob.io/envs'
+    required: false
+  def:
+    description: 'The oJob definition in alternative to the ojob input'
+    required: false
+  oaf:
+    description: 'A OpenAF script file to run'
+    required: false
+  script: 
+    description: 'The OpenAF script contents to execute'
+    required: false
   args:
     description: 'The oJob args to use'
     required: false
-    default: ''
   dist:
     description: 'The OpenAF distribution to use'
     required: false
-    default: ''
+  pwd :
+    description: 'Path to the working directory to use'
+    required: false
 runs:
   using: "composite"
   steps:
+  #- name : Setup OpenAF
+  #  uses : openaf/action-setup@v2
+  #  with :
+  #    dist: ${{ inputs.dist }}
+  - name : Checkout OpenAF action-setup
+    uses : actions/checkout@v4
+    with :
+      repository: openaf/action-setup
+      ref       : v2
+      path      : .github/action/oaf-action-setup
+
+  - name : Activate OpenAF action-setup
+    uses : ./.github/action/oaf-action-setup
+    with :
+      dist: ${{ inputs.dist }}
+
   - shell: bash
-    run  : |
-      if [ ! -f /tmp/oaf/ojob ]; then
-        CDIR=`pwd`
-        mkdir /tmp/oaf
-        cd /tmp/oaf
-        curl https://openaf.io/${{ inputs.dist }}/openaf.jar.repacked -o openaf.jar
-        java -jar openaf.jar --install
-        cd $CDIR
+    name : Check for def
+    if   : ${{ inputs.def }}
+    run  : | #shell
+      echo ${{ format('''{0}''', inputs.def) }} > /tmp/temp.yaml
+      if [ "${{ inputs.pwd }}" != "" ]; then
+         cd ${{ inputs.pwd }}
       fi
+      /tmp/oaf/ojob /tmp/temp.yaml ${{ inputs.args }}
+
   - shell: bash
-    run  : |
+    name : Check for oaf
+    if   : ${{ inputs.oaf }}
+    run  : | #shell
+      if [ "${{ inputs.pwd }}" != "" ]; then
+         cd ${{ inputs.pwd }}
+      fi
+      /tmp/oaf/oaf -f ${{ inputs.oaf }} -e '${{ inputs.args }}'
+
+  - shell: bash
+    name : Check for script
+    if   : ${{ inputs.script }}
+    run  : | #shell
+      echo ${{ format('''{0}''', inputs.script) }} > /tmp/temp.js
+      if [ "${{ inputs.pwd }}" != "" ]; then
+         cd ${{ inputs.pwd }}
+      fi
+      /tmp/oaf/oaf -f /tmp/temp.js -e '${{ inputs.args }}'
+
+  - shell: bash
+    name : Check for ojob
+    if   : ${{ inputs.ojob }}
+    run  : | #shell
+      if [ "${{ inputs.pwd }}" != "" ]; then
+         cd ${{ inputs.pwd }}
+      fi
       /tmp/oaf/ojob ${{ inputs.ojob }} ${{ inputs.args }}

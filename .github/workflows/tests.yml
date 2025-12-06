@@ -1,0 +1,127 @@
+name: Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  # OJOB.IO TEST
+  # ------------
+  ojobio-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: oJob.io echo test
+      uses: ./
+      with:
+        ojob: ojob.io/echo
+        args: "x=123 y=456"
+    
+  # OJOB TESTS
+  # ----------
+  ojob-test:
+    runs-on: ubuntu-latest
+    steps  :
+    - uses: actions/checkout@v4
+    - name: simple ojob test
+      uses: ./
+      with:
+        def: |
+          todo:
+          - test
+          
+          jobs:
+          - name: test
+            exec: |
+              args.name2 = $sh("echo " + args.name).get(0).stdout.trim()
+              if (isUnDef(args.name) || args.name != "Tiger") exit(-1)
+              if (isUnDef(args.name2) || args.name2 != "Tiger") exit(-2)
+        args: "name=Tiger"
+    
+  # SCRIPT TESTS
+  # ------------
+  script-test:
+    runs-on: ubuntu-latest
+    steps  :
+    - uses: actions/checkout@v4
+    - name: simple test (part 1)
+      uses: ./
+      with:
+        script: |
+          io.writeFileString("/tmp/test", "this is a test")
+          var test = io.readFileString("/tmp/test")
+          if (test != "this is a test") exit(-1)
+    - name: simple test (part 2)
+      uses: ./
+      with:
+        script: |
+          var test = io.readFileString("/tmp/test")
+          if (test != "this is a test") exit(-1)
+    - name: test with parameters
+      uses: ./
+      with:
+        script: |
+          var params = processExpr(" ")
+        
+          ow.loadTest()
+          try {
+            ow.test.assert(isDef(params.name) && params.name == "Tiger", true, "Problem with parameter passing")
+            ow.test.assert(isDef(params.other) && params.other == "Scott Tiger", true, "Problem with parameters with space")
+          } catch(e) {
+            printErr(e)
+            exit(-1)
+          }
+        args  : "name=Tiger other=\"Scott\ Tiger\""
+    - name: test with dollar signs
+      uses: ./
+      with:
+        script: |
+          var name = $sh("echo Tiger").get(0).stdout.trim()
+          if (isUnDef(name) || name != "Tiger") exit(-1)
+    - name: test with external script (part 1)
+      uses: ./
+      with:
+        script: |
+          io.writeFileString("/tmp/test.js", "var params = processExpr(' ')\nif (params.name != 'Tiger') exit(-1)")
+          print(io.readFileString("/tmp/test.js"))
+    - name: test with external script (part 2)
+      uses: ./
+      with:
+        oaf : /tmp/test.js
+        args: "name=Tiger"
+   
+  # DIST TESTS
+  # ----------
+  dist-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: nightly test
+      uses: ./
+      with:
+        dist  : nightly
+        script: |
+          if (getDistribution() != "nightly") exit(-1)
+    - name: change dist test
+      uses: openaf/ojob-action@v6
+      with:
+        script: |
+          // Refering to a different dist is not supporte so the same should be kept
+          if (getDistribution() != "nightly") exit(-1)
+
+  # PWD TESTS
+  # ---------
+  dist-pwd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: pwd test
+      uses: ./
+      with:
+        dist  : nightly
+        pwd   : /etc
+        script: |
+          if (io.fileInfo(".").canonicalPath != "/etc") exit(-1)

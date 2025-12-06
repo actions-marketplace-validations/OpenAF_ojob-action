@@ -4,7 +4,7 @@ todo:
 
 ojob:
   opacks      :
-  - Badgen: 20230520
+  - Badgen: 20230603
   catch       : printErrnl("[" + job.name + "] "); if (isDef(exception.javaException)) exception.javaException.printStackTrace(); else printErr(exception)
   templateArgs: true
 
@@ -34,7 +34,7 @@ jobs:
   - name      : Badgen generate file
     args      :
       label     : "openaf/ojob-action:"
-      labelColor: grey2
+      labelColor: grey3
       color     : green
       icon      : openaf.svg
       file      : .github/ojobs/version.svg

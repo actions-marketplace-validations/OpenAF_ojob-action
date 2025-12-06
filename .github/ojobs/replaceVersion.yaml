@@ -1,0 +1,64 @@
+# Author: Nuno Aguiar
+# help:
+#   text   : Does stuff. 
+#   expects: 
+#   - name     : file
+#     desc     : To do something
+#     example  : aValueExample
+#     mandatory: true
+
+todo:
+- name: Replace files with version
+  args:
+  - file: README.md
+  - file: USES.md
+
+ojob:
+  opacks      :
+  - openaf: 20230622
+  catch       : printErrnl("[" + job.name + "] "); if (isDef(exception.javaException)) exception.javaException.printStackTrace(); else printErr(exception)
+  logToConsole: true   # to change when finished
+        
+
+jobs:
+# -----------------------
+- name: Check tag version
+  exec: |
+    args.tagVersion = $from( 
+                        $sh("gh api repos/openaf/ojob-action/releases").getJson(0).stdout 
+                      )
+                      .sort("-published_at")
+                      .at(0)
+                      .name
+
+# ---------------------------------
+- name : Replace files with version
+  check:
+    in: 
+      file: isString
+  from :
+  - Check tag version
+  to   :
+  - (pass          ):
+      inputFile : "{{file}}"
+    ((debug       )): false
+    ((templateArgs)): true
+
+  - (findReplace ):
+      # Escape existing template entries
+      "\\{\\{"                              : "\\{{"
+      # Replace existing version with the tagVersion
+      "(mob-eng/risk-rca-ojob-action@)v\\d+": "$1{{tagVersion}}"
+    #((inputFile )): README.md
+    ((useRegExp )): true
+
+  - (pass          ):
+      inputFile : null
+      outputFile: "{{file}}"
+    ((debug       )): false
+    ((templateArgs)): true
+
+  - (template      ): "{{{$t output this}}}"
+    ((key         )): args
+    ((tpath       )): output
+    #((outputFile)): README.md

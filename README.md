@@ -1,16 +1,16 @@
 # ojob-action
 
-![version](.github/ojobs/version.svg)
+![version](.github/ojobs/version.svg) [![Tests](https://github.com/OpenAF/ojob-action/actions/workflows/tests.yml/badge.svg)](https://github.com/OpenAF/ojob-action/actions/workflows/tests.yml)
 
 OpenAF's oJob GitHub action to run generic [OpenAF](https://docs.openaf.io) [oJobs](https://docs.openaf.io/docs/concepts/oJob.html).
 
-## Usage
+## Basic usage
 
 On a GitHub action step add the following entry:
 
 ````yaml
   - name: Executing an oJob
-    uses: openaf/ojob-action@v2
+    uses: openaf/ojob-action@v7
     with:
       # the reference to a local oJob yaml/json file or a remote oJob.io
       ojob: '...' 
@@ -25,37 +25,93 @@ After the first use, in a job, the installation of the OpenAF runtime is reused 
 
 ````yaml
   - name: Cache OpenAF runtime
-    uses: actions/cache@v3
+    uses: actions/cache@v4
     with:
       # you need to manage the cache in the best way specifically for your case
       key : oaf-nightly
       path: /tmp/oaf
 
   - name: Executing an oJob
-    uses: openaf/ojob-action@v2
+    uses: openaf/ojob-action@v7
     with:
       ojob: '...' 
       args: 'key1=value1 key2=value2 ...'
       dist: 'nightly'
+      pwd : '/some/dir'
+````
+
+### Embedding an oJob definition
+
+It's possible to add the oJob YAML definition directly as the action parameters:
+
+````yaml
+  - name: Executing Hello World
+    uses: openaf/ojob-action@v7
+    with:
+      def : |
+        todo:
+        - Say hello
+        
+        jobs:
+        - name : Say hello
+          check:
+            in:
+              name: isString.default("someone")
+          exec : |
+            tprint("Hi {{name}}!", args)
+            
+      args: "name=Scott"
+````
+
+### Executing an OpenAF script
+
+If you have a local OpenAF script you can also run directly. 
+
+````yaml
+  - name: Executing hello.js
+    uses: openaf/ojob-action@v7
+    with:
+      oaf : scripts/hello.js
+      args: "name=Tiger"
+````
+
+### Embedding an OpenAF script
+
+If necessary, it's also possible to embeed a script directly with _script_:
+
+````yaml
+  - name: Executing hello.js
+    uses: openaf/ojob-action@v7
+    with:
+      script: |
+        var params = processExpr(" ")
+        
+        if (isDef(params.name)) tprint("Hi {{name}}!", params)
+        
+      args  : "name=Tiger"
 ````
 
 ## Examples
+
+Checkout also the [catalog of uses](USES.md).
 
 *Example of a GitHub action to run an ojob.io job:*
 
 ````yaml
 name: Get Envs
-on: [push]
+on:
+  workflow_dispatch:
+  push:
 
 jobs:
   Get-Envs:
     runs-on: ubuntu-latest
     name   : Get env variables
     steps  :
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Retrieve env variables for testing
-      uses: openaf/ojob-action@v2
+      uses: openaf/ojob-action@v7
       with:
         ojob: 'ojob.io/envs'
 ````
@@ -64,17 +120,19 @@ jobs:
 
 ````yaml
 name: Echo arguments
-on: [push]
+on:
+  workflow_dispatch:
+  push:
 
 jobs:
   Echo-Arguments:
     runs-on: ubuntu-latest
     name   : Echo arguments
     steps  :
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Echo input args for testing
-      uses: openaf/ojob-action@v2
+      uses: openaf/ojob-action@v7
       with:
         ojob: 'ojob.io/echo'
         args: 'abc=123 xyz=abc'
@@ -86,6 +144,7 @@ jobs:
 name: Scan Images
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "master" ]
   schedule:
@@ -96,67 +155,62 @@ jobs:
     runs-on    : ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
+      
     name       : Scan images
     steps      :
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Scan some/image:latest
-      uses: openaf/ojob-action@v2
+      uses: openaf/ojob-action@v7
       with:
         ojob: 'ojob.io/sec/genSecBadge'
         args: 'image=some/image:latest file=.github/sec-latest.svg'
         dist: 'nightly'
 
     - name: Scan some/image:build
-      uses: openaf/ojob-action@v2
+      uses: openaf/ojob-action@v7
       with:
         ojob: 'ojob.io/sec/genSecBadge'
         args: 'image=some/image:build file=.github/sec-build.svg'
         dist: 'nightly'
 
     - name: Add the generated badges 
-      run : |
-        # user identification
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        # only add/commit/push if new contents exist
-        if [[ $(git status --porcelain) ]]; then
-          git add .github/sec-latest.svg
-          git add .github/sec-build.svg
-          git commit -m "update badge"
-          git push
-        fi
+      uses: openaf/ojob-action@v7
+      env :
+        GH_TOKEN: ${{ github.token }}
+      with:
+        ojob: 'ojob.io/git/githubCheckIn'
+        args: 'message="Badges\ update"'
+        dist: 'nightly'
 ````
 
 *Example of a GitHub action to retrieve the installed version and distribution of OpenAF:*
 
 ````yaml
 name: Get Version
-on: [push]
+on:
+  workflow_dispatch:
+  push:
 
 jobs:
   Get-Version:
     runs-on: ubuntu-latest
     name: Get version
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Generating getVersion.yaml oJob
-      run : |
-        cat <<EOF > getVersion.yaml
-        todo:
-        - check version
-        
-        jobs:
-        - name: check version
-          exec: |
-            var data = { version: getVersion(), distribution: getDistribution() }
-            ow.oJob.output(data, args)
-        EOF
-
-    - name: Running getVersion.yaml oJob
-      uses: openaf/ojob-action@v2
+    - name: Running get version
+      uses: openaf/ojob-action@v7
       with:
-        ojob: 'getVersion.yaml'
-        dist: 'nightly'
+        def : |
+          todo:
+          - check version
+
+          jobs:
+          - name: check version
+            exec: |
+              var data = { version: getVersion(), distribution: getDistribution() }
+              ow.oJob.output(data, args)
+        dist: nightly
 ````
